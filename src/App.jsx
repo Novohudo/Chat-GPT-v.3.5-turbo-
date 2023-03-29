@@ -1,35 +1,53 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import 'normalize.css';
+import './App.css';
+import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
+import {
+	MainContainer,
+	ChatContainer,
+	MessageList,
+	Message,
+	MessageInput,
+	TypingIndicator
+} from "@chatscope/chat-ui-kit-react";
+import {useState} from "react";
 
 function App() {
-  const [count, setCount] = useState(0)
+	const [typing, setTyping] = useState(false);
+	const [messages, setMessages] = useState([
+		{
+			message: "Heloo,my name is Skynet!",
+			sender: "ChatGPT"
+		}
+	]);
+	const handleSend = async (message) => {
+		const newMessage = {
+			message: message,
+			sender: "user",
+			direction: "outgoing"
+		}
+		const newMessages = [...messages, newMessage];
+		setMessages(newMessages);
+		setTyping(true);
+	}
 
-  return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
-  )
+	return (
+		<div className="App">
+			<div className="App-Container" style={{position: "relative", height: "800px", width: "700px"}}>
+				<MainContainer>
+					<ChatContainer>
+						<MessageList
+							typingIndicator={typing ? <TypingIndicator content="reading your message.."/> : null}
+						>
+							{messages.map((message, i) => {
+								return <Message key={i} model={message}/>
+							})}
+						</MessageList>
+						<MessageInput placeholder="Type message here" onSend={handleSend}/>
+					</ChatContainer>
+				</MainContainer>
+			</div>
+		</div>
+	)
 }
 
 export default App
