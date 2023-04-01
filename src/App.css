@@ -1,6 +1,6 @@
 .App-Container {
       position: relative;
-      height: 50%;
+      height: 100vh;
       width: 40%;
       margin: 0 auto;
 }

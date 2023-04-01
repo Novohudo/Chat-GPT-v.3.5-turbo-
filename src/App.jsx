@@ -11,11 +11,14 @@ import {
 } from "@chatscope/chat-ui-kit-react";
 import {useState} from "react";
 
+
+const API_KEY = import.meta.env.VITE_API_KEY;
+
 function App() {
 	const [typing, setTyping] = useState(false);
 	const [messages, setMessages] = useState([
 		{
-			message: "Heloo,my name is Skynet!",
+			message: "I'm Yorick , speak to me",
 			sender: "ChatGPT"
 		}
 	]);
@@ -28,6 +31,48 @@ function App() {
 		const newMessages = [...messages, newMessage];
 		setMessages(newMessages);
 		setTyping(true);
+		await processMessageToChatGPT(newMessages)
+	}
+
+	async function processMessageToChatGPT(chatMessages) {
+		let apiMessages = chatMessages.map((messagesObject) => {
+			let role = "";
+			if (messagesObject === "ChatGPT") {
+				role = "assistant"
+			} else {
+				role = "user"
+			}
+			return {role: role, content: messagesObject.message}
+		});
+
+		const systemMessage = {
+			role: "system",
+			content: "Explain answer 42"
+		}
+
+		const apiRequestBody = {
+			"model": "gpt-3.5-turbo",
+			"messages": [
+				systemMessage,
+				...apiMessages]
+		}
+
+		await fetch("https://api.openai.com/v1/chat/completions", {
+			method: "POST",
+			headers: {
+				"Authorization": `Bearer ${API_KEY}`,
+				"Content-Type": "application/json"
+			},
+			body: JSON.stringify(apiRequestBody)
+		}).then((data) => {
+			return data.json();
+		}).then((data)=>{
+			setMessages([...chatMessages,{
+				message: data.choices[0].message.content,
+				sender: "ChatGPT"
+			}])
+		})
+
 	}
 
 	return (
