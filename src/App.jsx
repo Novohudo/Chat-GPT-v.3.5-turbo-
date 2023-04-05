@@ -1,30 +1,23 @@
 import 'normalize.css';
 import './App.css';
-import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css';
-import {
-	MainContainer,
-	ChatContainer,
-	MessageList,
-	Message,
-	MessageInput,
-	TypingIndicator
-} from "@chatscope/chat-ui-kit-react";
-import {useState} from "react";
-
+import {useEffect, useRef, useState} from "react";
 
 const API_KEY = import.meta.env.VITE_API_KEY;
 
 function App() {
 	const [typing, setTyping] = useState(false);
-	const [messages, setMessages] = useState([
-		{
-			message: "I'm Yorick , speak to me",
-			sender: "ChatGPT"
-		}
-	]);
-	const handleSend = async (message) => {
+	const [messages, setMessages] = useState([]);
+	const [input, setInput] = useState("");
+	const myRef = useRef();
+
+	useEffect(() => {
+		const element = myRef.current;
+		element.scrollTop = element.scrollHeight;
+	});
+
+	const handleSend = async (input) => {
 		const newMessage = {
-			message: message,
+			message: input,
 			sender: "user",
 			direction: "outgoing"
 		}
@@ -47,7 +40,7 @@ function App() {
 
 		const systemMessage = {
 			role: "system",
-			content: "Explain answer 42"
+			content: "Speak normal"
 		}
 
 		const apiRequestBody = {
@@ -66,30 +59,31 @@ function App() {
 			body: JSON.stringify(apiRequestBody)
 		}).then((data) => {
 			return data.json();
-		}).then((data)=>{
-			setMessages([...chatMessages,{
+		}).then((data) => {
+			setMessages([...chatMessages, {
 				message: data.choices[0].message.content,
 				sender: "ChatGPT"
 			}])
-		})
-
+			setTyping(false);
+			console.log(data)
+		});
 	}
 
 	return (
-		<div className="App">
-			<div className="App-Container" style={{position: "relative", height: "800px", width: "700px"}}>
-				<MainContainer>
-					<ChatContainer>
-						<MessageList
-							typingIndicator={typing ? <TypingIndicator content="reading your message.."/> : null}
-						>
-							{messages.map((message, i) => {
-								return <Message key={i} model={message}/>
-							})}
-						</MessageList>
-						<MessageInput placeholder="Type message here" onSend={handleSend}/>
-					</ChatContainer>
-				</MainContainer>
+		<div className="App" >
+			<div className="App-Container" ref={myRef}>
+				{messages.map((message, i) => {
+					return <div  className="message-bubble" key={i}>
+						<div className="avatar"/>
+						<div className="text">{message.message}</div>
+					</div>
+				})}
+
+				<div className="input-container">
+					<form onSubmit={(e) => {e.preventDefault();handleSend(input);setInput('')}}>
+						<input value={input} onChange={(e) => setInput(e.target.value)} placeholder="type your question here"/>
+					</form>
+				</div>
 			</div>
 		</div>
 	)
